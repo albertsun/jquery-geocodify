@@ -20,6 +20,7 @@
           'fontSize': '16px',
           'buttonValue': 'GO',
           'regionBias': null,
+          'regionBiasFilter': false,
           'viewportBias': null,
           'onSelect': function(ele) { alert('Jump to: ' + ele.formatted_address )},
           'minimumCharacters': 5,
@@ -157,26 +158,43 @@
                         reset();
                     } else {
                         var ul = $("<ul>").css({'margin': 0, 'padding': 0, 'background-color': 'white'});
+                        function checkCountry(address_components) {
+                            for (var i=0,len=address_components.length; i<len; i++) {
+                                if ((address_components[i].types[0] === "country") &&
+                                    (address_components[i].short_name.toLowerCase() === settings.regionBias)) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
                         $.each(keep, function(i, val) {
-                            $('<li>')
-                                .html(val.formatted_address)
-                                .css({
-                                    'cursor': 'pointer',
-                                    'margin-left': 0,
-                                    'padding': '5px 0 5px 8px',
-                                    'list-style-type': 'none',
-                                    'font-size': settings.fontSize,
-                                    'text-align': 'left'
-                                })
-                                .click(function(){settings.onSelect(val); reset();})
-                                .hover(
-                                    function() { 
-                                        $(this).css({'background-color': '#EEE', 'cursor': 'pointer'});
-                                    },
-                                    function() {
-                                        $(this).css({'background-color': 'white', 'cursor': 'auto'});
+                            var include;
+                            if (settings.regionBiasFilter) {
+                                include = checkCountry(val.address_components)
+                            } else {
+                                include = true;
+                            }
+                            if (include === true) {
+                                $('<li>')
+                                    .html(val.formatted_address)
+                                    .css({
+                                        'cursor': 'pointer',
+                                        'margin-left': 0,
+                                        'padding': '5px 0 5px 8px',
+                                        'list-style-type': 'none',
+                                        'font-size': settings.fontSize,
+                                        'text-align': 'left'
                                     })
-                                .appendTo(ul);
+                                    .click(function(){settings.onSelect(val); reset();})
+                                    .hover(
+                                        function() { 
+                                            $(this).css({'background-color': '#EEE', 'cursor': 'pointer'});
+                                        },
+                                        function() {
+                                            $(this).css({'background-color': 'white', 'cursor': 'auto'});
+                                        })
+                                    .appendTo(ul);
+                            }
                         });
                         ul.appendTo(dropdown);
                         input.css({
