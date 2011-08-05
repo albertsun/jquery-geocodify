@@ -1,4 +1,17 @@
 (function( $ ){
+    if (!window.Modernizr) {
+        window.Modernizr = {};
+    }
+    if (!window.Modernizr.input) {
+        window.Modernizr.input = {};
+    }
+    if (window.Modernizr.input.placeholder === undefined) {
+        window.Modernizr.input.placeholder = (function() {
+            var i = document.createElement('input');
+            return 'placeholder' in i;
+        }());
+    }
+
     $.fn.geocodify = function(options) {
 
         var settings = {
@@ -210,12 +223,16 @@
             document.getElementById(inputId).setAttribute("autocomplete", "off");
             var input = $("#" + inputId);
             if (settings.initialText) {
-                input.val(settings.initialText);
-                input.focus(function() {
-                    if (input.val() == settings.initialText) {
-                        input.val("");
-                    }
-                });
+                if (Modernizr.input.placeholder) {
+                    input.attr({"placeholder": settings.initialText});
+                } else {
+                    input.val(settings.initialText);
+                    input.focus(function() {
+                        if (input.val() == settings.initialText) {
+                            input.val("");
+                        }
+                    });
+                }
             }
             
             if (settings.buttonValue !== "") {
